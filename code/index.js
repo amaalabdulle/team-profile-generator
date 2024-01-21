@@ -1,3 +1,4 @@
+// const Employee = require("./lib/Employee");
 const Manager = require("./lib/Manager");
 const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
@@ -10,34 +11,35 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./src/page-template.js");
 
-
 // TODO: Write Code to gather information about the development team members, and render the HTML file.
 
 const teamMembers = [];
 
+console.log('Hello World!')
+
 // function for team member info
-function ask () {
+function ask() {
   inquirer
-    .prompt ([
+    .prompt([
       {
         type: 'input',
         name: 'name',
-        message: 'Enter the managers name',
+        message: 'Enter the manager\'s name',
       },
       {
         type: 'input',
         name: 'id',
-        message: 'Enter the managers employee ID',
+        message: 'Enter the manager\'s employee ID',
       },
       {
         type: 'input',
         name: 'email',
-        message: 'Enter the managers email',
+        message: 'Enter the manager\'s email',
       },
       {
         type: 'input',
         name: 'office',
-        message: 'Enter the managers office number',
+        message: 'Enter the manager\'s office number',
       },
       {
         type: 'list',
@@ -46,7 +48,16 @@ function ask () {
         choices: ['Engineer', 'Intern', 'Finish building the team'],
       },
     ])
-    .then ((answers) => {
+    .then((answers) => {
+      const manager = new Manager(
+        answers.name,
+        answers.id,
+        answers.email,
+        answers.office,
+      )
+  
+      teamMembers.push(manager);
+
       if (answers.role === 'Engineer') {
         promptEngineer(answers);
       } else if (answers.role === 'Intern') {
@@ -61,16 +72,24 @@ function ask () {
       } else {
         // Something else went wrong
       }
-    })
+    });
 }
 
-function finishBuildingTeam () {
+function finishBuildingTeam() {
   console.log('Team has been completed!');
   console.log('Team members: ', teamMembers);
 
   // team members added to html
-  render(teamMembers);
+  const htmlContent = render(teamMembers);
+
+  fs.writeFileSync(outputPath, htmlContent);
+  console.log(`HTML file generated at ${outputPath}`);
+
+  teamMembers.forEach(member => {
+    writeToFile(member);
+  });
 }
+    
 
 function promptEngineer (answers) {
   const engineerQuestions = [
@@ -94,16 +113,42 @@ function promptEngineer (answers) {
       name: 'githubUsername',
       message: 'What is the engineers Github username?'
     },
+    {
+      type: 'list',
+      name: 'role',
+      message: 'Add another employee:',
+      choices: ['Engineer', 'Intern', 'Finish building the team'],
+    },
   ];
-  inquirer.prompt(engineerQuestions).then((engineerAnswers) => {
-    const engineer = new Engineer(engineerAnswers.name, engineerAnswers.id, engineerAnswers.email, engineerAnswers.githubUsername);
-    // adding the new engineer to the team members array
+
+  inquirer.prompt(engineerQuestions)
+  .then((engineerAnswers) => {
+    const engineer = new Engineer(
+      engineerAnswers.name,
+      engineerAnswers.id,
+      engineerAnswers.email,
+      engineerAnswers.githubUsername
+    )
+
     teamMembers.push(engineer);
-    
-    // calling the function again if more engineers need to be added
-    ask();
+
+    if (engineerAnswers.role === 'Engineer') {
+      promptEngineer(engineerAnswers);
+    } else if (engineerAnswers.role === 'Intern') {
+      promptIntern(engineerAnswers);
+    } else if (engineerAnswers.role === 'Finish building the team') {
+      finishBuildingTeam();
+    }
+})
+
+  .catch((error) => {
+    if (error.isTtyError) {
+      // Prompt couldn't be rendered in the current environment
+    } else {
+      // Something else went wrong
+    }
   });
-};
+}
 
 function promptIntern (answers) {
   const internQuestions = [
@@ -127,14 +172,45 @@ function promptIntern (answers) {
       name: 'school',
       message: 'What is the interns school??'
     },
+    {
+      type: 'list',
+      name: 'role',
+      message: 'Add another employee:',
+      choices: ['Engineer', 'Intern', 'Finish building the team'],
+    },
   ];
-  inquirer.prompt(internQuestions).then((internAnswers) => {
-    const intern = new Intern(internAnswers.name, internAnswers.id, internAnswers.email, internAnswers.school);
-    // adding the new intern to the team members array
+  inquirer.prompt(internQuestions)
+  .then((internAnswers) => {
+    const intern = new Intern(
+      internAnswers.name,
+      internAnswers.id,
+      internAnswers.email,
+      internAnswers.school
+    )
+
     teamMembers.push(intern);
-    
-    // calling the function again if more interns need to be added
-    ask();
-  });
-};
+
+      if (internAnswers.role === 'Engineer') {
+        promptEngineer(internAnswers);
+      } else if (internAnswers.role === 'Intern') {
+        promptIntern(internAnswers);
+      } else if (internAnswers.role === 'Finish building the team') {
+        finishBuildingTeam();
+      }
+    })
+    .catch((error) => {
+      if (error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+      } else {
+        // Something else went wrong
+      }
+    });
+  };
+
+function writeToFile(employee) {
+  fs.appendFileSync(outputPath, content);
+  console.log(`HTML file updated at ${outputPath}`);
+}
+
+ask();
 
