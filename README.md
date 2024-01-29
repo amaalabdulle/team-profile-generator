@@ -16,6 +16,8 @@ To use the Team Profile Generator, follow these steps:
 3. Answer the prompts to input information about team members.
 4. Once all information is entered, the application will generate an HTML webpage in the `output` directory.
 
+![alt text](code/images/team-profile-generator.png)
+
 ## Credits
 - [Inquirer.js](https://www.npmjs.com/package/inquirer) - Used for interactive command-line prompts.
 
